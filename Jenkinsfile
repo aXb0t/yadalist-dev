@@ -28,7 +28,7 @@ pipeline {
 
         stage('Deploy to Homelab') {
             steps {
-                sh 'scp docker-compose.dev.yml containers:/opt/myapp/docker-compose.prod.yml'
+                sh 'scp docker-compose.prod.yml containers:/opt/myapp/docker-compose.yml'
                 sh 'docker save ${IMAGE_NAME}:latest | ssh containers "docker load"'
                 sh '''
                     ssh containers "cd /opt/myapp && \
