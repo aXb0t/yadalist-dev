@@ -87,10 +87,3 @@
       owner: "{{ app_user }}"
       group: "{{ app_user }}"
       mode: '0600'
-
-  - name: Display generated credentials
-    debug:
-      msg:
-        - "Database password: {{ db_password }}"
-        - "Secret key: {{ secret_key }}"
-        - "Allowed hosts: {{ allowed_hosts }}"
