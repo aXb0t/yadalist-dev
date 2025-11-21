@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: myapp
+      POSTGRES_USER: myapp
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    restart: unless-stopped
+    
+  web:
+    image: myapp:latest
+    command: gunicorn myapp.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://myapp:${DB_PASSWORD}@db:5432/myapp
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: "False"
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

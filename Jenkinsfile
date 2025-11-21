@@ -29,6 +29,12 @@ pipeline {
         stage('Deploy to Homelab') {
             steps {
                 sh '''
+                    # Copy docker-compose.yml to deployment server
+                    scp docker-compose.yml containers:/opt/myapp/
+
+                    # Save the built image and transfer it
+                    docker save ${IMAGE_NAME}:latest | ssh containers "docker load"
+
                     ssh containers "cd /opt/myapp && \
                     docker-compose pull && \
                     docker-compose run --rm web python manage.py migrate && \
