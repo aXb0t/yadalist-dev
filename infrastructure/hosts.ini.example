@@ -1,0 +1,5 @@
+[jenkins]
+192.168.0.0
+
+[jenkins:vars]
+ansible_ssh_user=admin

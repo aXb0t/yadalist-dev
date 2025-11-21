@@ -1,0 +1,35 @@
+---
+- hosts: deployment
+  become: true
+  gather_facts: true
+
+  vars:
+    app_dir: /opt/myapp
+    app_user: {{app_user | default('root')}}
+    db_password: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+    secret_key: "{{ lookup('password', '/dev/null length=50 chars=ascii_letters,digits') }}"
+    allowed_hosts: "{{ ansible_default_ipv4.address }},localhost,127.0.0.1"
+
+  tasks:
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: '0755'
+
+    - name: Create .env file
+      template:
+        src: templates/env.j2
+        dest: "{{ app_dir }}/.env"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: '0600'
+
+    - name: Display generated credentials
+      debug:
+        msg:
+          - "Database password: {{ db_password }}"
+          - "Secret key: {{ secret_key }}"
+          - "Allowed hosts: {{ allowed_hosts }}"

@@ -68,3 +68,11 @@ yarn-error.log*
 
 # Celery
 celerybeat-schedule
+
+# Infrastructure as Code
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terragrunt-cache/
+# Ansible inventory files
+**/hosts.ini
