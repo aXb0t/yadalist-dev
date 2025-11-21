@@ -6,6 +6,11 @@
   vars_files:
     - vars.yml
 
+  vars:
+    db_password: "{{ vault_db_password }}"
+    secret_key: "{{ vault_secret_key }}"
+    allowed_hosts: "{{ vault_allowed_hosts }}"
+
   tasks:
   - name: Install prerequisites for Docker
     apt:
