@@ -29,7 +29,7 @@ pipeline {
         stage('Deploy to Homelab') {
             steps {
                 sh '''
-                    ssh devops@10.74.74.67 "cd /opt/myapp && \
+                    ssh containers "cd /opt/myapp && \
                     docker-compose pull && \
                     docker-compose run --rm web python manage.py migrate && \
                     docker-compose up -d"
