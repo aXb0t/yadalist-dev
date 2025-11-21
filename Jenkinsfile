@@ -32,8 +32,8 @@ pipeline {
                 sh 'docker save ${IMAGE_NAME}:latest | ssh containers "docker load"'
                 sh '''
                     ssh containers "cd /opt/myapp && \
-                    docker-compose run --rm web python manage.py migrate && \
-                    docker-compose up -d"
+                    docker compose run --rm web python manage.py migrate && \
+                    docker compose up -d"
                 '''
             }
         }
