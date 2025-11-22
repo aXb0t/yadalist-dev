@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+        DEPLOY_SERVER = "schmango-deploy"
         IMAGE_NAME = "schmango"
         IMAGE_TAG = "${BUILD_NUMBER}"
     }
