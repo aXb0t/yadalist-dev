@@ -33,8 +33,9 @@ pipeline {
                 sh 'docker save ${IMAGE_NAME}:latest | ssh ${DEPLOY_SERVER} "docker load"'
                 sh '''
                     ssh ${DEPLOY_SERVER} "cd /opt/schmango && \
+                    sleep 10 && \
                     docker compose run --rm web python manage.py migrate && \
-                    docker compose up -d"
+                    docker compose restart web"
                 '''
             }
         }
