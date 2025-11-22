@@ -29,10 +29,10 @@ pipeline {
 
         stage('Deploy to Homelab') {
             steps {
-                sh 'scp docker-compose.prod.yml containers:/opt/schmango/docker-compose.yml'
-                sh 'docker save ${IMAGE_NAME}:latest | ssh containers "docker load"'
+                sh 'scp docker-compose.prod.yml ${DEPLOY_SERVER}:/opt/schmango/docker-compose.yml'
+                sh 'docker save ${IMAGE_NAME}:latest | ssh ${DEPLOY_SERVER} "docker load"'
                 sh '''
-                    ssh containers "cd /opt/schmango && \
+                    ssh ${DEPLOY_SERVER} "cd /opt/schmango && \
                     docker compose run --rm web python manage.py migrate && \
                     docker compose up -d"
                 '''

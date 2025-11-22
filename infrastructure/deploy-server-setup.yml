@@ -1,5 +1,5 @@
 ---
-- hosts: deployment
+- hosts: schmango
   become: true
   gather_facts: true
 
