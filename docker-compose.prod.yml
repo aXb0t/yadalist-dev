@@ -4,20 +4,20 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: myapp
-      POSTGRES_USER: myapp
+      POSTGRES_DB: schmango
+      POSTGRES_USER: schmango
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     restart: unless-stopped
     
   web:
-    image: myapp:latest
-    command: gunicorn myapp.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    image: schmango:latest
+    command: gunicorn schmango.wsgi:application --bind 0.0.0.0:8000 --workers 3
     ports:
       - "8000:8000"
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgresql://myapp:${DB_PASSWORD}@db:5432/myapp
+      DATABASE_URL: postgresql://schmango:${DB_PASSWORD}@db:5432/schmango
       SECRET_KEY: ${SECRET_KEY}
       DEBUG: "False"
       ALLOWED_HOSTS: ${ALLOWED_HOSTS}

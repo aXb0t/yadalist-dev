@@ -31,7 +31,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'myapp.urls'
+ROOT_URLCONF = 'schmango.urls'
 
 TEMPLATES = [
     {
@@ -49,11 +49,11 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'myapp.wsgi.application'
+WSGI_APPLICATION = 'schmango.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgresql://myapp:development_password@db:5432/myapp'
+        default='postgresql://schmango:development_password@db:5432/schmango'
     )
 }
 

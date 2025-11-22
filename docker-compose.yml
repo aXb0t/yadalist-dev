@@ -4,8 +4,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: myapp
-      POSTGRES_USER: myapp
+      POSTGRES_DB: schmango
+      POSTGRES_USER: schmango
       POSTGRES_PASSWORD: development_password
 
   web:
@@ -18,8 +18,8 @@ services:
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgresql://myapp:development_password@db:5432/myapp
-      DJANGO_SETTINGS_MODULE: myapp.settings
+      DATABASE_URL: postgresql://schmango:development_password@db:5432/schmango
+      DJANGO_SETTINGS_MODULE: schmango.settings
 
 volumes:
   postgres_data:

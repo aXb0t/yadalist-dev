@@ -2,14 +2,14 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "myapp"
+        IMAGE_NAME = "schmango"
         IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'http://10.74.74.72:3000/ax/DockerDjango.git'
+                git branch: 'main', url: 'http://10.74.74.72:3000/ax/Schmango.git'
             }
         }
 
@@ -28,10 +28,10 @@ pipeline {
 
         stage('Deploy to Homelab') {
             steps {
-                sh 'scp docker-compose.prod.yml containers:/opt/myapp/docker-compose.yml'
+                sh 'scp docker-compose.prod.yml containers:/opt/schmango/docker-compose.yml'
                 sh 'docker save ${IMAGE_NAME}:latest | ssh containers "docker load"'
                 sh '''
-                    ssh containers "cd /opt/myapp && \
+                    ssh containers "cd /opt/schmango && \
                     docker compose run --rm web python manage.py migrate && \
                     docker compose up -d"
                 '''
