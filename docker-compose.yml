@@ -7,6 +7,11 @@ services:
       POSTGRES_DB: schmango
       POSTGRES_USER: schmango
       POSTGRES_PASSWORD: development_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U schmango -d schmango"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   web:
     build: .
@@ -16,7 +21,8 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgresql://schmango:development_password@db:5432/schmango
       DJANGO_SETTINGS_MODULE: schmango.settings

@@ -8,6 +8,12 @@ services:
       POSTGRES_USER: schmango
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U schmango -d schmango"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     
   web:
     image: schmango:latest
@@ -15,7 +21,8 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgresql://schmango:${DB_PASSWORD}@db:5432/schmango
       SECRET_KEY: ${SECRET_KEY}
