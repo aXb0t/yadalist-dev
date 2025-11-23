@@ -8,7 +8,7 @@
     - vars/secrets.yml
 
   vars:
-    domain_name: yadalist.com
+    domain_name: yadalist.duckdns.org
     letsencrypt_email: "{{ vault_ssl_email }}"
 
   tasks:
