@@ -1,0 +1,110 @@
+---
+- hosts: schmango
+  become: true
+  gather_facts: true
+
+  vars_files:
+    - vars/vars.yml
+    - vars/secrets.yml
+
+  vars:
+    domain_name: schmangoapp.com
+    letsencrypt_email: "{{ vault_ssl_email }}"
+
+  tasks:
+  - name: Create certbot directories
+    file:
+      path: "{{ app_dir }}/{{ item }}"
+      state: directory
+      owner: "{{ app_user }}"
+      group: "{{ app_user }}"
+      mode: '0755'
+    loop:
+      - certbot/conf
+      - certbot/www
+
+  - name: Download recommended TLS parameters
+    get_url:
+      url: "{{ item.url }}"
+      dest: "{{ app_dir }}/certbot/conf/{{ item.dest }}"
+      owner: "{{ app_user }}"
+      group: "{{ app_user }}"
+      mode: '0644'
+    loop:
+      - url: https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf
+        dest: options-ssl-nginx.conf
+      - url: https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem
+        dest: ssl-dhparams.pem
+
+  - name: Check if SSL certificate already exists
+    stat:
+      path: "{{ app_dir }}/certbot/conf/live/{{ domain_name }}/fullchain.pem"
+    register: ssl_cert
+
+  - name: Create dummy certificate directory
+    file:
+      path: "{{ app_dir }}/certbot/conf/live/{{ domain_name }}"
+      state: directory
+      owner: "{{ app_user }}"
+      group: "{{ app_user }}"
+      mode: '0755'
+    when: not ssl_cert.stat.exists
+
+  - name: Generate dummy certificate
+    become_user: "{{ app_user }}"
+    shell: |
+      cd {{ app_dir }}
+      docker compose run --rm --entrypoint "\
+        openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
+          -keyout '/etc/letsencrypt/live/{{ domain_name }}/privkey.pem' \
+          -out '/etc/letsencrypt/live/{{ domain_name }}/fullchain.pem' \
+          -subj '/CN=localhost'" certbot
+    when: not ssl_cert.stat.exists
+
+  - name: Start nginx with dummy certificate
+    become_user: "{{ app_user }}"
+    shell: |
+      cd {{ app_dir }}
+      docker compose up --force-recreate -d nginx
+    when: not ssl_cert.stat.exists
+
+  - name: Wait for nginx to be ready
+    wait_for:
+      port: 80
+      delay: 5
+      timeout: 30
+    when: not ssl_cert.stat.exists
+
+  - name: Remove dummy certificate
+    become_user: "{{ app_user }}"
+    shell: |
+      cd {{ app_dir }}
+      docker compose run --rm --entrypoint "\
+        rm -Rf /etc/letsencrypt/live/{{ domain_name }} && \
+        rm -Rf /etc/letsencrypt/archive/{{ domain_name }} && \
+        rm -Rf /etc/letsencrypt/renewal/{{ domain_name }}.conf" certbot
+    when: not ssl_cert.stat.exists
+
+  - name: Request Let's Encrypt certificate
+    become_user: "{{ app_user }}"
+    shell: |
+      cd {{ app_dir }}
+      docker compose run --rm --entrypoint "\
+        certbot certonly --webroot -w /var/www/certbot \
+          --email {{ letsencrypt_email }} \
+          -d {{ domain_name }} \
+          --rsa-key-size 4096 \
+          --agree-tos \
+          --force-renewal" certbot
+    when: not ssl_cert.stat.exists
+
+  - name: Reload nginx
+    become_user: "{{ app_user }}"
+    shell: |
+      cd {{ app_dir }}
+      docker compose exec nginx nginx -s reload
+    when: not ssl_cert.stat.exists
+
+  - name: Display completion message
+    debug:
+      msg: "SSL certificate setup complete for {{ domain_name }}"
