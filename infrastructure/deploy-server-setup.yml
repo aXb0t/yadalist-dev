@@ -80,6 +80,14 @@
       group: "{{ app_user }}"
       mode: '0755'
 
+  - name: Create nginx subdirectory
+    file:
+      path: "{{ app_dir }}/nginx"
+      state: directory
+      owner: "{{ app_user }}"
+      group: "{{ app_user }}"
+      mode: '0755'
+
   - name: Create .env file
     template:
       src: templates/env.j2
