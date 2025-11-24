@@ -9,3 +9,9 @@ __pycache__
 *.sqlite3
 venv/
 env/
+
+# Frontend build artifacts (handled separately in Dockerfile)
+frontend/node_modules/
+frontend/dist/
+frontend/storybook-static/
+frontend/.storybook-cache/

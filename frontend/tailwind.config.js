@@ -3,7 +3,9 @@ export default {
   content: [
     './src/**/*.{html,js}',
     './stories/**/*.{html,js}',
-    '../**/templates/**/*.html', // Include Django templates
+    '../accounts/templates/**/*.html',
+    '../hello/templates/**/*.html',
+    // Add other app templates as needed
   ],
   theme: {
     extend: {
