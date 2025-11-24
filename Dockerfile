@@ -2,6 +2,9 @@
 FROM node:20 AS frontend
 WORKDIR /frontend
 
+# Increase Node.js memory limit for Tailwind build
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 # Copy frontend package files
 COPY frontend/package*.json ./
 RUN npm ci --only=production
