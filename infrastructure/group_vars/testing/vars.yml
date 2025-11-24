@@ -1,0 +1,2 @@
+---
+csrf_trusted_origins: http://10.74.74.66,http://localhost,http://127.0.0.1

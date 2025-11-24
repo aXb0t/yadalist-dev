@@ -1,0 +1,2 @@
+---
+csrf_trusted_origins: https://yadalist.com,https://www.yadalist.com
