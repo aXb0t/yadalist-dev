@@ -1,0 +1,71 @@
+---
+# Bootstrap playbook - Run ONCE as root to set up devops user and harden SSH
+# Usage: ansible-playbook -i hosts.ini bootstrap-server.yml --limit production_bootstrap
+# After running this, all subsequent playbooks should use the devops user
+
+- hosts: production_bootstrap
+  become: true
+  gather_facts: true
+  remote_user: root
+
+  vars:
+    ansible_ssh_user: root
+    devops_user: devops
+    # Paste your local public key here or pass via --extra-vars
+    devops_ssh_public_key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_ed25519.pub') }}"
+
+  tasks:
+    - name: Ensure devops user exists
+      user:
+        name: "{{ devops_user }}"
+        state: present
+        shell: /bin/bash
+        create_home: yes
+        groups: sudo
+        append: yes
+
+    - name: Set up authorized_keys for devops user
+      ansible.posix.authorized_key:
+        user: "{{ devops_user }}"
+        state: present
+        key: "{{ devops_ssh_public_key }}"
+        exclusive: no
+
+    - name: Allow devops user passwordless sudo
+      lineinfile:
+        path: /etc/sudoers.d/devops
+        state: present
+        create: yes
+        mode: '0440'
+        line: "{{ devops_user }} ALL=(ALL) NOPASSWD:ALL"
+        validate: '/usr/sbin/visudo -cf %s'
+
+    - name: Disable root SSH login
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+        state: present
+      notify: Restart SSH
+
+    - name: Disable password authentication (key-only)
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+      notify: Restart SSH
+
+    - name: Ensure PubkeyAuthentication is enabled
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PubkeyAuthentication'
+        line: 'PubkeyAuthentication yes'
+        state: present
+      notify: Restart SSH
+
+  handlers:
+    - name: Restart SSH
+      service:
+        name: ssh
+        state: restarted
