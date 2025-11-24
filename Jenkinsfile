@@ -40,9 +40,14 @@ pipeline {
             steps {
                 script {
                     echo "Deploying to ${params.DEPLOY_ENV} environment..."
+
+                    // Select nginx config based on environment
+                    def nginxConfig = params.DEPLOY_ENV == 'production' ? 'nginx.production.conf' : 'nginx.testing.conf'
+
+                    // Copy environment-specific nginx config
+                    sh "scp nginx/${nginxConfig} ${DEPLOY_SERVER}:/opt/schmango/nginx/nginx.conf"
                 }
                 sh 'scp docker-compose.prod.yml ${DEPLOY_SERVER}:/opt/schmango/docker-compose.yml'
-                sh 'scp -r nginx ${DEPLOY_SERVER}:/opt/schmango/'
                 sh 'docker save ${IMAGE_NAME}:latest | ssh ${DEPLOY_SERVER} "docker load"'
                 sh '''
                     ssh ${DEPLOY_SERVER} "cd /opt/schmango && \
