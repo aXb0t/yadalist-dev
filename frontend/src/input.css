@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Component Classes */
+@layer components {
+  /* Container */
+  .container-card {
+    @apply max-w-3xl mx-auto p-5 bg-background;
+  }
+
+  .card {
+    @apply bg-card p-8 rounded-lg shadow;
+  }
+
+  /* Navigation */
+  .nav {
+    @apply mb-5 p-3 rounded;
+  }
+
+  .nav--dark {
+    @apply bg-nord1;
+  }
+
+  .nav__link {
+    @apply text-nord6 no-underline mr-4 hover:underline;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply px-5 py-2.5 border-0 rounded cursor-pointer text-base font-medium transition-colors;
+  }
+
+  .btn--primary {
+    @apply bg-primary text-white hover:bg-primary-hover;
+  }
+
+  .btn--secondary {
+    @apply bg-secondary text-nord0 hover:bg-nord8;
+  }
+
+  .btn--success {
+    @apply bg-success text-white hover:bg-nord14/90;
+  }
+
+  .btn--danger {
+    @apply bg-error text-white hover:bg-nord11/90;
+  }
+
+  /* Forms */
+  .form-group {
+    @apply mb-4;
+  }
+
+  .form-label {
+    @apply block mb-1.5 font-bold text-text;
+  }
+
+  .form-input {
+    @apply w-full px-3 py-2 border border-border rounded box-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
+  }
+
+  .form-helptext {
+    @apply text-xs text-text-muted block mt-1.5;
+  }
+
+  /* Alerts */
+  .alert-list {
+    @apply list-none p-0;
+  }
+
+  .alert {
+    @apply px-4 py-3 my-3 rounded border;
+  }
+
+  .alert--success {
+    @apply bg-success/20 text-success border-success;
+  }
+
+  .alert--error {
+    @apply bg-error/20 text-error border-error;
+  }
+
+  .alert--info {
+    @apply bg-info/20 text-info border-info;
+  }
+
+  .alert--warning {
+    @apply bg-warning/20 text-warning border-warning;
+  }
+
+  /* Error Lists */
+  .errorlist {
+    @apply text-error list-none p-0;
+  }
+
+  .errorlist li {
+    @apply bg-error/10 px-2 py-1.5 my-1.5 rounded text-sm;
+  }
+
+  /* Typography */
+  .heading-1 {
+    @apply text-3xl font-bold text-text mb-4;
+  }
+
+  .heading-2 {
+    @apply text-2xl font-bold text-text mb-3;
+  }
+
+  .heading-3 {
+    @apply text-xl font-semibold text-text mb-2;
+  }
+
+  /* Links */
+  .link {
+    @apply text-primary no-underline hover:underline;
+  }
+
+  .link--secondary {
+    @apply text-secondary;
+  }
+}
+
+/* Custom Utilities */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

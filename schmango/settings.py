@@ -105,6 +105,11 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
+# Additional static file locations (for development)
+STATICFILES_DIRS = [
+    BASE_DIR / "frontend" / "dist",
+]
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "login"

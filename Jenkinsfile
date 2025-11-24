@@ -23,7 +23,17 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build Frontend') {
+            steps {
+                dir('frontend') {
+                    sh 'npm ci'
+                    sh 'npm run build'
+                    sh 'npm run build-storybook'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
             steps {
                 sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
                 sh 'docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest'
@@ -46,6 +56,10 @@ pipeline {
 
                     // Copy environment-specific nginx config
                     sh "scp nginx/${nginxConfig} ${DEPLOY_SERVER}:/opt/schmango/nginx/nginx.conf"
+
+                    // Copy Storybook static files to deployment server
+                    sh "ssh ${DEPLOY_SERVER} 'mkdir -p /opt/schmango/storybook'"
+                    sh "scp -r frontend/storybook-static/* ${DEPLOY_SERVER}:/opt/schmango/storybook/"
                 }
                 sh 'scp docker-compose.prod.yml ${DEPLOY_SERVER}:/opt/schmango/docker-compose.yml'
                 sh 'docker save ${IMAGE_NAME}:latest | ssh ${DEPLOY_SERVER} "docker load"'
