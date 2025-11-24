@@ -1,4 +1,7 @@
 # Byte-compiled / optimized / DLL files
+
+# GitHub workflows (ignored for now)
+.github/
 __pycache__/
 *.py[cod]
 *$py.class
