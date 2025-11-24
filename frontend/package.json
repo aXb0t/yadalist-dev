@@ -1,0 +1,25 @@
+{
+  "name": "yadalist-ui",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Yadalist Design System - Tailwind + Nord Theme",
+  "scripts": {
+    "dev": "concurrently \"npm run watch:css\" \"npm run storybook\"",
+    "build": "tailwindcss -i ./src/input.css -o ./dist/yadalist-ui.css --minify",
+    "watch:css": "tailwindcss -i ./src/input.css -o ./dist/yadalist-ui.css --watch",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build -o storybook-static"
+  },
+  "devDependencies": {
+    "@storybook/addon-a11y": "^8.0.0",
+    "@storybook/addon-essentials": "^8.0.0",
+    "@storybook/html": "^8.0.0",
+    "@storybook/html-vite": "^8.0.0",
+    "autoprefixer": "^10.4.17",
+    "concurrently": "^8.2.2",
+    "postcss": "^8.4.35",
+    "storybook": "^8.0.0",
+    "tailwindcss": "^3.4.1",
+    "vite": "^5.1.0"
+  }
+}
