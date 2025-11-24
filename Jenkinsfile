@@ -13,7 +13,7 @@ pipeline {
         IMAGE_NAME = "schmango"
         IMAGE_TAG = "${BUILD_NUMBER}"
         // Set deploy server based on environment parameter
-        DEPLOY_SERVER = "${params.DEPLOY_ENV == 'production' ? 'root@64.225.121.7' : 'schmango-deploy'}"
+        DEPLOY_SERVER = "${params.DEPLOY_ENV == 'production' ? 'schmango-prod' : 'schmango-deploy'}"
     }
 
     stages {
