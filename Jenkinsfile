@@ -60,6 +60,11 @@ pipeline {
                     // Copy Storybook static files to deployment server
                     sh "ssh ${DEPLOY_SERVER} 'mkdir -p /opt/schmango/storybook'"
                     sh "scp -r frontend/storybook-static/* ${DEPLOY_SERVER}:/opt/schmango/storybook/"
+
+                    // Copy scripts directory
+                    sh "ssh ${DEPLOY_SERVER} 'mkdir -p /opt/schmango/scripts'"
+                    sh "scp scripts/* ${DEPLOY_SERVER}:/opt/schmango/scripts/"
+                    sh "ssh ${DEPLOY_SERVER} 'chmod +x /opt/schmango/scripts/*.sh'"
                 }
                 sh 'scp docker-compose.prod.yml ${DEPLOY_SERVER}:/opt/schmango/docker-compose.yml'
                 sh 'docker save ${IMAGE_NAME}:latest | ssh ${DEPLOY_SERVER} "docker load"'

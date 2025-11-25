@@ -1,0 +1,60 @@
+---
+# Dump database from deployment server
+# Usage: ansible-playbook -i inventory.ini infrastructure/dump-database.yml -e "target_env=homelab"
+
+- hosts: "{{ target_env | default('testing') }}"
+  become: false
+  gather_facts: false
+
+  vars_files:
+    - vars/vars.yml
+
+  vars:
+    local_dump_dir: "{{ playbook_dir }}/../dumps"
+
+  tasks:
+    - name: Generate timestamp
+      local_action:
+        module: command
+        cmd: date +%Y%m%d_%H%M%S
+      register: timestamp_result
+      run_once: true
+      changed_when: false
+
+    - name: Set dump filename
+      set_fact:
+        dump_filename: "schmango_{{ target_env | default('testing') }}_{{ timestamp_result.stdout }}.sql"
+
+    - name: Create local dumps directory
+      local_action:
+        module: file
+        path: "{{ local_dump_dir }}"
+        state: directory
+        mode: '0755'
+      run_once: true
+
+    - name: Dump PostgreSQL database from Docker container
+      shell: |
+        cd {{ app_dir }}
+        docker compose exec -T db pg_dump -U schmango -d schmango --clean --if-exists
+      register: db_dump
+      changed_when: false
+
+    - name: Save database dump locally
+      local_action:
+        module: copy
+        content: "{{ db_dump.stdout }}"
+        dest: "{{ local_dump_dir }}/{{ dump_filename }}"
+        mode: '0644'
+
+    - name: Display success message
+      debug:
+        msg:
+          - "Database dump successful!"
+          - "Saved to: {{ local_dump_dir }}/{{ dump_filename }}"
+          - ""
+          - "To restore to local development:"
+          - "  docker-compose down -v"
+          - "  docker-compose up -d db"
+          - "  sleep 5"
+          - "  docker-compose exec -T db psql -U schmango -d schmango < {{ local_dump_dir }}/{{ dump_filename }}"

@@ -1,0 +1,54 @@
+---
+# Restore database dump to local development environment
+# Usage: ansible-playbook infrastructure/restore-database-local.yml -e "dump_file=dumps/schmango_homelab_20250125.sql"
+
+- hosts: localhost
+  connection: local
+  gather_facts: true
+
+  vars:
+    project_dir: "{{ playbook_dir }}/.."
+
+  tasks:
+    - name: Verify dump file exists
+      stat:
+        path: "{{ project_dir }}/{{ dump_file }}"
+      register: dump_stat
+      failed_when: not dump_stat.stat.exists
+
+    - name: Stop all docker-compose services
+      command: docker-compose down -v
+      args:
+        chdir: "{{ project_dir }}"
+      ignore_errors: true
+
+    - name: Start database service only
+      command: docker-compose up -d db
+      args:
+        chdir: "{{ project_dir }}"
+
+    - name: Wait for database to be ready
+      wait_for:
+        timeout: 15
+      delegate_to: localhost
+
+    - name: Restore database from dump
+      shell: |
+        docker-compose exec -T db psql -U schmango -d schmango < {{ dump_file }}
+      args:
+        chdir: "{{ project_dir }}"
+      register: restore_result
+
+    - name: Display restore result
+      debug:
+        msg:
+          - "Database restored successfully from {{ dump_file }}"
+          - ""
+          - "Start your local environment with:"
+          - "  docker-compose up"
+
+    - name: Start all services
+      command: docker-compose up -d
+      args:
+        chdir: "{{ project_dir }}"
+      when: restore_result is succeeded
