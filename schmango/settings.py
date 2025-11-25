@@ -114,6 +114,9 @@ if (BASE_DIR / "frontend" / "dist").exists():
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Custom User Model
+AUTH_USER_MODEL = 'accounts.User'
+
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "profile"
 LOGOUT_REDIRECT_URL = "login"

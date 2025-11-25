@@ -1,10 +1,14 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+
+User = get_user_model()
 
 
 class SignupForm(UserCreationForm):
     """UserCreationForm with design-system CSS classes applied to widgets."""
 
     class Meta(UserCreationForm.Meta):
+        model = User
         fields = ("username", "password1", "password2")
 
     def __init__(self, *args, **kwargs):
