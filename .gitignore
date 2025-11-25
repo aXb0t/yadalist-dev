@@ -41,6 +41,11 @@ media/
 staticfiles/
 # keep migrations/ tracked (don't ignore)
 
+# Database dumps
+dumps/
+*.sql
+*.dump
+
 # Testing / coverage
 .coverage
 .coverage.*
