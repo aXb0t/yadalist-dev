@@ -18,8 +18,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy built frontend assets
-COPY --from=frontend /frontend/dist /app/staticfiles/css/
+# Copy built frontend assets to a location collectstatic will find
+COPY --from=frontend /frontend/dist /app/frontend/dist
 
 # Install Python dependencies
 COPY requirements.txt .

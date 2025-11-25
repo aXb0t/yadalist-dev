@@ -105,9 +105,11 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-# Additional static file locations (for development only)
+# Additional static file locations
+# In development: use volume-mounted frontend/dist
+# In production: use frontend/dist copied into Docker image
 STATICFILES_DIRS = []
-if DEBUG and (BASE_DIR / "frontend" / "dist").exists():
+if (BASE_DIR / "frontend" / "dist").exists():
     STATICFILES_DIRS = [BASE_DIR / "frontend" / "dist"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
