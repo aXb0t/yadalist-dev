@@ -15,3 +15,6 @@ frontend/node_modules/
 frontend/dist/
 frontend/storybook-static/
 frontend/.storybook-cache/
+
+# Local staticfiles (Django will regenerate in production)
+staticfiles/
