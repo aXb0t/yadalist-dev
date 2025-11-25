@@ -1,45 +1,17 @@
+"""
+Base settings shared across all environments.
+"""
 import os
 from pathlib import Path
-import dj_database_url
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get(
     "SECRET_KEY", "django-insecure-dev-key-change-in-production"
 )
 
-DEBUG = os.environ.get("DEBUG", "True") == "True"
-
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
-
-# Security settings
-# Trust the X-Forwarded-Proto header from nginx proxy
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
-SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "False") == "True"
-SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "False") == "True"
-CSRF_COOKIE_SECURE = os.environ.get("CSRF_COOKIE_SECURE", "False") == "True"
-CSRF_TRUSTED_ORIGINS = os.environ.get(
-    "CSRF_TRUSTED_ORIGINS", "http://localhost,http://127.0.0.1"
-).split(",")
-CSRF_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SAMESITE = "Lax"
-CSRF_USE_SESSIONS = False
-CSRF_COOKIE_NAME = "csrftoken"
-
-# HSTS only makes sense when SSL redirect is enabled
-if SECURE_SSL_REDIRECT:
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-else:
-    SECURE_HSTS_SECONDS = 0
-
-# Always-on security headers (no downside in dev or prod)
-SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_BROWSER_XSS_FILTER = True
-X_FRAME_OPTIONS = "DENY"
-
+# Application definition
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -82,11 +54,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "schmango.wsgi.application"
 
-DATABASES = {
-    "default": dj_database_url.config(
-        default="postgresql://schmango:development_password@db:5432/schmango"
-    )
-}
+# Password validation
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -97,20 +65,19 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# Internationalization
+
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
+# Static files (CSS, JavaScript, Images)
+
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-# Additional static file locations
-# In development: use volume-mounted frontend/dist
-# In production: use frontend/dist copied into Docker image
-STATICFILES_DIRS = []
-if (BASE_DIR / "frontend" / "dist").exists():
-    STATICFILES_DIRS = [BASE_DIR / "frontend" / "dist"]
+# Default primary key field type
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

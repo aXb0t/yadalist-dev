@@ -42,7 +42,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'docker run --rm ${IMAGE_NAME}:${IMAGE_TAG} python manage.py test'
+                sh 'docker run --rm -e DJANGO_SETTINGS_MODULE=schmango.settings.testing ${IMAGE_NAME}:${IMAGE_TAG} python manage.py test'
             }
         }
 
