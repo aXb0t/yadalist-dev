@@ -43,7 +43,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://schmango:development_password@db:5432/schmango
-      DJANGO_SETTINGS_MODULE: schmango.settings
+      DJANGO_SETTINGS_MODULE: schmango.settings.development
 
   storybook:
     image: node:20
