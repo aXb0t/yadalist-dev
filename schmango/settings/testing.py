@@ -6,6 +6,8 @@ Uses SQLite in-memory database for fast, isolated tests.
 from .base import *
 
 DEBUG = False
+if not SECRET_KEY:
+    raise ValueError("DJANGO_SECRET_KEY environment variable must be set")
 
 # Use SQLite in-memory database for tests
 DATABASES = {

@@ -8,6 +8,8 @@ import dj_database_url
 from .base import *
 
 DEBUG = False
+if not SECRET_KEY:
+    raise ValueError("DJANGO_SECRET_KEY environment variable must be set")
 
 # Database - PostgreSQL from environment
 DATABASES = {
