@@ -7,6 +7,7 @@ Multi-layer validation to prevent malicious uploads:
 3. MIME type validation (magic bytes)
 4. Image integrity validation (Pillow)
 """
+
 import os
 import magic
 from PIL import Image
@@ -18,15 +19,10 @@ from django.conf import settings
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB in bytes
 
 # Allowed file extensions
-ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"]
 
 # Allowed MIME types (must match actual file content)
-ALLOWED_MIME_TYPES = [
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-    'image/webp'
-]
+ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"]
 
 
 def validate_image_file(file):
@@ -35,7 +31,7 @@ def validate_image_file(file):
 
     Validates:
     1. File size (max 10MB)
-    2. File extension (jpg, jpeg, png, gif, webp)
+    2. File extension (jpg, jpeg, png, webp)
     3. MIME type via magic bytes (not just extension)
     4. Image integrity (can be opened and verified by Pillow)
 
@@ -49,15 +45,15 @@ def validate_image_file(file):
     # Layer 1: File size validation
     if file.size > MAX_FILE_SIZE:
         raise ValidationError(
-            f'Image file too large. Maximum size is {MAX_FILE_SIZE // (1024*1024)}MB. '
-            f'Your file is {file.size // (1024*1024)}MB.'
+            f"Image file too large. Maximum size is {MAX_FILE_SIZE // (1024*1024)}MB. "
+            f"Your file is {file.size // (1024*1024)}MB."
         )
 
     # Layer 2: Extension validation
     ext = os.path.splitext(file.name)[1].lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise ValidationError(
-            f'Unsupported file extension: {ext}. '
+            f"Unsupported file extension: {ext}. "
             f'Allowed extensions: {", ".join(ALLOWED_EXTENSIONS)}'
         )
 
@@ -70,8 +66,8 @@ def validate_image_file(file):
 
     if mime_type not in ALLOWED_MIME_TYPES:
         raise ValidationError(
-            f'Invalid file type. File appears to be {mime_type}, '
-            f'but only image files are allowed.'
+            f"Invalid file type. File appears to be {mime_type}, "
+            f"but only image files are allowed."
         )
 
     # Layer 4: Image integrity validation
@@ -81,9 +77,7 @@ def validate_image_file(file):
         img.verify()  # Verify it's actually an image
         file.seek(0)  # Reset file pointer again
     except Exception as e:
-        raise ValidationError(
-            f'Invalid or corrupted image file. Error: {str(e)}'
-        )
+        raise ValidationError(f"Invalid or corrupted image file. Error: {str(e)}")
 
     # Additional check: Image dimensions (optional safety check)
     # Reopen image to get dimensions (verify() closes the file)
@@ -96,15 +90,13 @@ def validate_image_file(file):
         MAX_PIXELS = 50_000_000  # 50 megapixels
         if width * height > MAX_PIXELS:
             raise ValidationError(
-                f'Image dimensions too large ({width}x{height} = {width*height:,} pixels). '
-                f'Maximum is {MAX_PIXELS:,} pixels.'
+                f"Image dimensions too large ({width}x{height} = {width*height:,} pixels). "
+                f"Maximum is {MAX_PIXELS:,} pixels."
             )
     except ValidationError:
         raise  # Re-raise our validation error
     except Exception as e:
-        raise ValidationError(
-            f'Cannot read image dimensions. Error: {str(e)}'
-        )
+        raise ValidationError(f"Cannot read image dimensions. Error: {str(e)}")
 
 
 def validate_file_size(file):
@@ -115,7 +107,7 @@ def validate_file_size(file):
     """
     if file.size > MAX_FILE_SIZE:
         raise ValidationError(
-            f'File too large. Maximum size is {MAX_FILE_SIZE // (1024*1024)}MB.'
+            f"File too large. Maximum size is {MAX_FILE_SIZE // (1024*1024)}MB."
         )
 
 
@@ -128,6 +120,6 @@ def validate_image_extension(file):
     ext = os.path.splitext(file.name)[1].lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise ValidationError(
-            f'Unsupported file extension: {ext}. '
+            f"Unsupported file extension: {ext}. "
             f'Allowed: {", ".join(ALLOWED_EXTENSIONS)}'
         )
