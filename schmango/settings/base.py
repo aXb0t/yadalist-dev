@@ -46,7 +46,7 @@ ROOT_URLCONF = "schmango.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],  # Add templates directory for error pages
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
