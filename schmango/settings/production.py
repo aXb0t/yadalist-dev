@@ -47,3 +47,15 @@ X_FRAME_OPTIONS = "DENY"
 STATICFILES_DIRS = []
 if (BASE_DIR / "frontend" / "dist").exists():
     STATICFILES_DIRS = [BASE_DIR / "frontend" / "dist"]
+
+# Rate limiting - strict for production
+REST_FRAMEWORK = {
+    **REST_FRAMEWORK,  # Inherit from base settings
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '1000/hour',
+        'upload': '100/hour',
+    }
+}

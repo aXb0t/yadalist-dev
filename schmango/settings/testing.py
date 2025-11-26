@@ -34,3 +34,10 @@ STATICFILES_DIRS = []
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.MD5PasswordHasher',
 ]
+
+# Rate limiting - disabled for testing (no throttling in unit tests)
+REST_FRAMEWORK = {
+    **REST_FRAMEWORK,  # Inherit from base settings
+    'DEFAULT_THROTTLE_CLASSES': [],  # Disable throttling in tests
+    'DEFAULT_THROTTLE_RATES': {}
+}
