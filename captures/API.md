@@ -162,6 +162,128 @@ http GET :8000/api/captures/items/ -a username:password
 
 ---
 
+### Upload Images
+
+**POST** `/api/captures/items/{short_uuid}/upload_images/`
+
+Uploads one or more images to a capture. Maximum 20 images per capture.
+
+**Request:**
+```bash
+# Upload single image
+http POST :8000/api/captures/items/Exh4RVhahEtkQtxhKWEngr/upload_images/ \
+  -a username:password \
+  --form images@photo1.jpg
+
+# Upload multiple images
+http POST :8000/api/captures/items/Exh4RVhahEtkQtxhKWEngr/upload_images/ \
+  -a username:password \
+  --form images@photo1.jpg \
+  --form images@photo2.jpg \
+  --form images@photo3.jpg
+```
+
+**Response:** `201 Created`
+```json
+[
+    {
+        "id": 1,
+        "short_uuid": "abc123xyz",
+        "image": "/media/captures/2025/11/26/photo1.jpg",
+        "order": 0,
+        "created_at": "2025-11-26T16:10:00.000000Z"
+    },
+    {
+        "id": 2,
+        "short_uuid": "def456uvw",
+        "image": "/media/captures/2025/11/26/photo2.jpg",
+        "order": 1,
+        "created_at": "2025-11-26T16:10:01.000000Z"
+    }
+]
+```
+
+**Error:** `400 Bad Request` if uploading would exceed 20-image limit
+```json
+{
+    "error": "Cannot upload 5 images. Capture already has 18 images. Maximum is 20.",
+    "current_count": 18,
+    "max_allowed": 20
+}
+```
+
+---
+
+### Delete Image
+
+**DELETE** `/api/captures/items/{capture_short_uuid}/images/{image_short_uuid}/`
+
+Deletes a single image from a capture.
+
+**Request:**
+```bash
+http DELETE :8000/api/captures/items/Exh4RVhahEtkQtxhKWEngr/images/abc123xyz/ \
+  -a username:password
+```
+
+**Response:** `204 No Content`
+
+**Error:** `404 Not Found` if image doesn't exist or doesn't belong to the user
+
+---
+
+### Reorder Images
+
+**PATCH** `/api/captures/items/{short_uuid}/reorder/`
+
+Reorders images within a capture. Provide array of image UUIDs in desired order.
+
+**Request:**
+```bash
+http PATCH :8000/api/captures/items/Exh4RVhahEtkQtxhKWEngr/reorder/ \
+  -a username:password \
+  order:='["def456uvw", "abc123xyz", "ghi789rst"]'
+```
+
+**Response:** `200 OK`
+```json
+{
+    "reordered": true,
+    "count": 3
+}
+```
+
+**Error:** `400 Bad Request` if any UUID doesn't belong to the capture
+```json
+{
+    "error": "Image 12345678-1234-1234-1234-123456789012 does not belong to this capture"
+}
+```
+
+---
+
+### Complete Capture
+
+**POST** `/api/captures/items/{short_uuid}/complete/`
+
+Marks a capture as complete. This sets `is_complete=True` and can trigger downstream processing.
+
+**Request:**
+```bash
+http POST :8000/api/captures/items/Exh4RVhahEtkQtxhKWEngr/complete/ \
+  -a username:password
+```
+
+**Response:** `200 OK`
+```json
+{
+    "completed": true,
+    "image_count": 5
+}
+```
+
+---
+
 ## Example Workflows
 
 ### Complete Capture Workflow
@@ -170,15 +292,54 @@ http GET :8000/api/captures/items/ -a username:password
 # 1. Create capture
 CAPTURE=$(http POST :8000/api/captures/items/ -a user:pass | jq -r .short_uuid)
 
-# 2. Add transcript
+# 2. Upload images
+http POST :8000/api/captures/items/$CAPTURE/upload_images/ \
+  -a user:pass \
+  --form images@photo1.jpg \
+  --form images@photo2.jpg
+
+# 3. Add transcript
 http PATCH :8000/api/captures/items/$CAPTURE/ -a user:pass \
   voice_transcript="Buy groceries: milk, eggs, bread"
 
-# 3. Verify
+# 4. Mark complete
+http POST :8000/api/captures/items/$CAPTURE/complete/ -a user:pass
+
+# 5. Verify
 http GET :8000/api/captures/items/$CAPTURE/ -a user:pass
 
-# 4. Clean up
+# 6. Clean up
 http DELETE :8000/api/captures/items/$CAPTURE/ -a user:pass
+```
+
+### Image Management Workflow
+
+```bash
+# Get capture UUID
+CAPTURE="Exh4RVhahEtkQtxhKWEngr"
+
+# Upload multiple images
+http POST :8000/api/captures/items/$CAPTURE/upload_images/ \
+  -a user:pass \
+  --form images@img1.jpg \
+  --form images@img2.jpg \
+  --form images@img3.jpg
+
+# Get image UUIDs from response
+IMG1="abc123xyz"
+IMG2="def456uvw"
+IMG3="ghi789rst"
+
+# Reorder: move last image to front
+http PATCH :8000/api/captures/items/$CAPTURE/reorder/ \
+  -a user:pass \
+  order:="[\"$IMG3\", \"$IMG1\", \"$IMG2\"]"
+
+# Delete middle image
+http DELETE :8000/api/captures/items/$CAPTURE/images/$IMG1/ -a user:pass
+
+# Verify new order
+http GET :8000/api/captures/items/$CAPTURE/ -a user:pass
 ```
 
 ---
@@ -208,12 +369,5 @@ http DELETE :8000/api/captures/items/$CAPTURE/ -a user:pass
 - Unauthenticated requests return `401 Unauthorized`
 - Attempts to access other users' captures return `404 Not Found`
 - CSRF protection enabled for session authentication
-
----
-
-## Future Endpoints (Coming Soon)
-
-- `POST /api/captures/items/{short_uuid}/images/` - Upload images
-- `DELETE /api/captures/items/{short_uuid}/images/{image_uuid}/` - Delete image
-- `PATCH /api/captures/items/{short_uuid}/images/reorder/` - Reorder images
-- `POST /api/captures/items/{short_uuid}/complete/` - Mark capture complete
+- Image uploads limited to 20 per capture
+- File uploads validated as images only
