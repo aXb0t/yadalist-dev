@@ -37,9 +37,11 @@ venv.bak/
 local_settings.py
 db.sqlite3
 *.sqlite3
-media/
 staticfiles/
 # keep migrations/ tracked (don't ignore)
+
+# Media files (user uploads)
+media/
 
 # Database dumps
 dumps/
