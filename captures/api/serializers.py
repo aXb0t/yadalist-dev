@@ -3,6 +3,7 @@ Serializers for the captures API.
 """
 from rest_framework import serializers
 from captures.models import CapturedItem, CapturedImage
+from captures.validators import validate_image_file
 
 
 class CapturedImageSerializer(serializers.ModelSerializer):
@@ -36,12 +37,22 @@ class ImageUploadSerializer(serializers.Serializer):
     """
     Serializer for uploading multiple images to a capture.
     Accepts multipart form data with 'images' field containing one or more files.
+
+    Validation includes:
+    - File size (max 10MB per image)
+    - File extension (jpg, jpeg, png, gif, webp)
+    - MIME type verification (magic bytes)
+    - Image integrity (can be opened by Pillow)
+    - Image dimensions (max 50 megapixels)
     """
     images = serializers.ListField(
-        child=serializers.ImageField(allow_empty_file=False),
+        child=serializers.ImageField(
+            allow_empty_file=False,
+            validators=[validate_image_file]
+        ),
         allow_empty=False,
         max_length=20,
-        help_text="Upload one or more images (max 20 per capture)"
+        help_text="Upload one or more images (max 20 per capture, max 10MB each)"
     )
 
 
