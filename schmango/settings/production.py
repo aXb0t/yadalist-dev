@@ -7,7 +7,7 @@ import os
 import dj_database_url
 from .base import *
 
-DEBUG = os.environ.get("DEBUG", "False") == "True"
+DEBUG = False
 
 # Database - PostgreSQL from environment
 DATABASES = {
