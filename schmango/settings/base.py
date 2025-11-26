@@ -1,6 +1,7 @@
 """
 Base settings shared across all environments.
 """
+
 import os
 from pathlib import Path
 
@@ -24,6 +25,7 @@ INSTALLED_APPS = [
     "accounts",
     "captures",
     "hello",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
@@ -81,16 +83,30 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Media files (User uploads)
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Custom User Model
-AUTH_USER_MODEL = 'accounts.User'
+AUTH_USER_MODEL = "accounts.User"
 
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "profile"
 LOGOUT_REDIRECT_URL = "login"
+
+# Django REST Framework
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.BasicAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+    ],
+}

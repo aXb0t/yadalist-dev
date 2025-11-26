@@ -4,3 +4,6 @@ dj-database-url
 gunicorn
 shortuuid
 Pillow
+djangorestframework
+markdown
+django-filter

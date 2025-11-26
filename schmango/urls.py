@@ -25,6 +25,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("hello/", hello_world, name='hello'),
     path("accounts/", include('accounts.urls')),
+    path("api/", include('schmango.api_urls')),
 ]
 
 # Serve media files in development only
