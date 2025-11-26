@@ -5,8 +5,8 @@ Development settings - used for local development with docker-compose.
 import dj_database_url
 from .base import *
 
-# DEBUG = True
-DEBUG = False
+DEBUG = True
+# DEBUG = False
 
 # Database - PostgreSQL via docker-compose
 DATABASES = {
