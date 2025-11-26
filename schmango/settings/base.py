@@ -1,6 +1,7 @@
 """
 Base settings shared across all environments.
 """
+
 import os
 from pathlib import Path
 
@@ -24,6 +25,7 @@ INSTALLED_APPS = [
     "accounts",
     "captures",
     "hello",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
@@ -81,15 +83,15 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Media files (User uploads)
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Custom User Model
-AUTH_USER_MODEL = 'accounts.User'
+AUTH_USER_MODEL = "accounts.User"
 
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "profile"
