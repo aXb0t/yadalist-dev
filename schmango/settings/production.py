@@ -2,13 +2,12 @@
 Production settings - used for deployed environments.
 Requires proper environment variables to be set.
 """
+
 import os
 import dj_database_url
 from .base import *
 
 DEBUG = os.environ.get("DEBUG", "False") == "True"
-
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 # Database - PostgreSQL from environment
 DATABASES = {
@@ -51,11 +50,11 @@ if (BASE_DIR / "frontend" / "dist").exists():
 # Rate limiting - strict for production
 REST_FRAMEWORK = {
     **REST_FRAMEWORK,  # Inherit from base settings
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.UserRateThrottle',
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.UserRateThrottle",
     ],
-    'DEFAULT_THROTTLE_RATES': {
-        'user': '1000/hour',
-        'upload': '100/hour',
-    }
+    "DEFAULT_THROTTLE_RATES": {
+        "user": "1000/hour",
+        "upload": "100/hour",
+    },
 }

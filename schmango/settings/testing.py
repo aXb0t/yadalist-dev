@@ -6,8 +6,6 @@ from .base import *
 
 DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
-
 # Use SQLite in-memory database for tests
 DATABASES = {
     "default": {

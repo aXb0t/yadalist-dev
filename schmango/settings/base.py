@@ -12,6 +12,9 @@ SECRET_KEY = os.environ.get(
     "SECRET_KEY", "django-insecure-dev-key-change-in-production"
 )
 
+# Allowed hosts - set per environment via ALLOWED_HOSTS env var
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost").split(",")
+
 # Application definition
 
 INSTALLED_APPS = [

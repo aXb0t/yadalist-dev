@@ -1,13 +1,10 @@
 """
 Development settings - used for local development with docker-compose.
 """
-import os
 import dj_database_url
 from .base import *
 
 DEBUG = True
-
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # Database - PostgreSQL via docker-compose
 DATABASES = {
