@@ -40,5 +40,7 @@ PASSWORD_HASHERS = [
 REST_FRAMEWORK = {
     **REST_FRAMEWORK,  # Inherit from base settings
     "DEFAULT_THROTTLE_CLASSES": [],  # Disable throttling in tests
-    "DEFAULT_THROTTLE_RATES": {},
+    "DEFAULT_THROTTLE_RATES": {
+        "upload": "1000000/hour",  # High limit so tests don't actually throttle
+    },
 }
