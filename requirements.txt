@@ -4,6 +4,7 @@ dj-database-url
 gunicorn
 shortuuid
 Pillow
+python-magic
 djangorestframework
 drf-nested-routers
 markdown

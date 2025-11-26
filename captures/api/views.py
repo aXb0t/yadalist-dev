@@ -14,6 +14,7 @@ from .serializers import (
     ImageUploadSerializer,
     ImageReorderSerializer,
 )
+from .throttles import ImageUploadThrottle
 
 
 class CapturedItemViewSet(viewsets.ModelViewSet):
@@ -43,7 +44,7 @@ class CapturedItemViewSet(viewsets.ModelViewSet):
         """Set owner to current user on create."""
         serializer.save(owner=self.request.user)
 
-    @action(detail=True, methods=['post'], url_path='upload_images')
+    @action(detail=True, methods=['post'], url_path='upload_images', throttle_classes=[ImageUploadThrottle])
     def upload_images(self, request, short_uuid=None):
         """
         Upload one or more images to a capture.
@@ -51,6 +52,8 @@ class CapturedItemViewSet(viewsets.ModelViewSet):
         Enforces 20-image limit per capture.
         Auto-assigns order by appending to the end.
         Returns array of created images.
+
+        Rate limited: 100/hour (production), 1000/hour (development)
         """
         capture = self.get_object()
 

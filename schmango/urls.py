@@ -31,3 +31,9 @@ urlpatterns = [
 # Serve media files in development only
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Custom error handlers (Django looks for these by default)
+# These use templates/403.html, 404.html, and 500.html automatically when DEBUG=False
+handler403 = 'django.views.defaults.permission_denied'
+handler404 = 'django.views.defaults.page_not_found'
+handler500 = 'django.views.defaults.server_error'

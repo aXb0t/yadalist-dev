@@ -1,13 +1,13 @@
 """
 Development settings - used for local development with docker-compose.
 """
+
 import os
 import dj_database_url
 from .base import *
 
 DEBUG = True
-
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+# DEBUG = False
 
 # Database - PostgreSQL via docker-compose
 DATABASES = {
@@ -38,3 +38,15 @@ X_FRAME_OPTIONS = "DENY"
 STATICFILES_DIRS = []
 if (BASE_DIR / "frontend" / "dist").exists():
     STATICFILES_DIRS = [BASE_DIR / "frontend" / "dist"]
+
+# Rate limiting - relaxed for development (10x production rates)
+REST_FRAMEWORK = {
+    **REST_FRAMEWORK,  # Inherit from base settings
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "user": "10000/hour",  # 10x production
+        "upload": "1000/hour",  # 10x production
+    },
+}

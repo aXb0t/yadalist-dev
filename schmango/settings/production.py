@@ -2,13 +2,14 @@
 Production settings - used for deployed environments.
 Requires proper environment variables to be set.
 """
+
 import os
 import dj_database_url
 from .base import *
 
-DEBUG = os.environ.get("DEBUG", "False") == "True"
-
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+DEBUG = False
+if not SECRET_KEY:
+    raise ValueError("DJANGO_SECRET_KEY environment variable must be set")
 
 # Database - PostgreSQL from environment
 DATABASES = {
@@ -47,3 +48,35 @@ X_FRAME_OPTIONS = "DENY"
 STATICFILES_DIRS = []
 if (BASE_DIR / "frontend" / "dist").exists():
     STATICFILES_DIRS = [BASE_DIR / "frontend" / "dist"]
+
+# Rate limiting - strict for production
+REST_FRAMEWORK = {
+    **REST_FRAMEWORK,  # Inherit from base settings
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "user": "1000/hour",
+        "upload": "100/hour",
+    },
+}
+
+# Configure logging to capture errors
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "ERROR",
+            "class": "logging.FileHandler",
+            "filename": "/var/log/yadalist/django.log",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+    },
+}

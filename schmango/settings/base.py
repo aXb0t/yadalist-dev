@@ -12,6 +12,9 @@ SECRET_KEY = os.environ.get(
     "SECRET_KEY", "django-insecure-dev-key-change-in-production"
 )
 
+# Allowed hosts - set per environment via ALLOWED_HOSTS env var
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost").split(",")
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,7 +46,7 @@ ROOT_URLCONF = "schmango.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],  # Add templates directory for error pages
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -107,6 +110,6 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.BasicAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+        "rest_framework.permissions.IsAuthenticated",
     ],
 }

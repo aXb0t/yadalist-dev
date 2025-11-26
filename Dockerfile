@@ -18,6 +18,11 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Install system dependencies for python-magic
+RUN apt-get update && apt-get install -y \
+    libmagic1 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy built frontend assets to a location collectstatic will find
 COPY --from=frontend /frontend/dist /app/frontend/dist
 
