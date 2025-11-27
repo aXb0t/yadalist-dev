@@ -20,12 +20,14 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from hello.views import hello_world
+from captures.views import capture_page
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("hello/", hello_world, name='hello'),
     path("accounts/", include('accounts.urls')),
     path("api/", include('schmango.api_urls')),
+    path("capture/", capture_page, name='capture'),
 ]
 
 # Serve media files in development only
