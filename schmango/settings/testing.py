@@ -21,7 +21,16 @@ DATABASES = {
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
-CSRF_TRUSTED_ORIGINS = ["http://localhost"]
+# Get CSRF trusted origins from env var, default to testing server
+import os
+
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    "CSRF_TRUSTED_ORIGINS", "http://10.74.74.66"
+).split(",")
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read CSRF cookie for AJAX requests
+CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_NAME = "csrftoken"
 
 # Security headers
 SECURE_CONTENT_TYPE_NOSNIFF = True

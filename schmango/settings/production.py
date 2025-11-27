@@ -23,10 +23,11 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "False") == "True"
 SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "False") == "True"
 CSRF_COOKIE_SECURE = os.environ.get("CSRF_COOKIE_SECURE", "False") == "True"
-CSRF_TRUSTED_ORIGINS = os.environ.get(
-    "CSRF_TRUSTED_ORIGINS", "http://localhost,http://127.0.0.1"
-).split(",")
-CSRF_COOKIE_HTTPONLY = True
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(",")
+# IMPORTANT: Must be False to allow JavaScript AJAX requests to read CSRF token
+# This is required for the capture page image uploads and auto-save functionality
+# Even with HTTPS, this is safe because CSRF token is still validated server-side
+CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_NAME = "csrftoken"
