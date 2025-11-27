@@ -66,9 +66,6 @@ const CAPTURE_ID = '{{ capture.short_uuid }}';
 const API_BASE = '/api/captures/items';
 const CSRF_TOKEN = '{{ csrf_token }}';
 
-console.log('Capture page loaded. CAPTURE_ID:', CAPTURE_ID);
-console.log('CSRF_TOKEN from template:', CSRF_TOKEN);
-
 // Get CSRF token from cookies
 function getCookie(name) {
     let cookieValue = null;
@@ -87,18 +84,15 @@ function getCookie(name) {
 
 // Image upload handler
 document.getElementById('add-photos-btn').addEventListener('click', () => {
-    console.log('Add photos button clicked');
     document.getElementById('image-upload').click();
 });
 
 document.getElementById('add-photo-placeholder').addEventListener('click', () => {
-    console.log('Add photo placeholder clicked');
     document.getElementById('image-upload').click();
 });
 
 document.getElementById('image-upload').addEventListener('change', async (e) => {
     const files = e.target.files;
-    console.log('Files selected:', files.length);
     if (files.length === 0) return;
 
     const formData = new FormData();
@@ -106,10 +100,7 @@ document.getElementById('image-upload').addEventListener('change', async (e) => 
         formData.append('images', file);
     }
 
-    console.log('Uploading images to:', `${API_BASE}/${CAPTURE_ID}/upload_images/`);
-
     const csrfToken = getCookie('csrftoken');
-    console.log('Using CSRF token:', csrfToken);
 
     try {
         const response = await fetch(`${API_BASE}/${CAPTURE_ID}/upload_images/`, {
@@ -120,10 +111,7 @@ document.getElementById('image-upload').addEventListener('change', async (e) => 
             body: formData
         });
 
-        console.log('Upload response status:', response.status);
-
         if (response.ok) {
-            console.log('Upload successful, reloading page');
             // Reload page to show new images
             window.location.reload();
         } else {
@@ -174,7 +162,6 @@ document.addEventListener('click', async (e) => {
 
 // Next Item button - completes current capture and creates new one
 document.getElementById('next-item-btn').addEventListener('click', async () => {
-    console.log('Next Item button clicked');
     try {
         // Mark current capture as complete
         const response = await fetch(`${API_BASE}/${CAPTURE_ID}/complete/`, {
@@ -183,8 +170,6 @@ document.getElementById('next-item-btn').addEventListener('click', async () => {
                 'X-CSRFToken': getCookie('csrftoken')
             }
         });
-
-        console.log('Complete response status:', response.status);
 
         // Redirect to new capture (view will create new one)
         window.location.href = '/capture/';
@@ -196,7 +181,6 @@ document.getElementById('next-item-btn').addEventListener('click', async () => {
 
 // Save & Exit button
 document.getElementById('save-exit-btn').addEventListener('click', async () => {
-    console.log('Save & Exit button clicked');
     try {
         // Mark as complete
         const response = await fetch(`${API_BASE}/${CAPTURE_ID}/complete/`, {
@@ -206,8 +190,6 @@ document.getElementById('save-exit-btn').addEventListener('click', async () => {
             }
         });
 
-        console.log('Save response status:', response.status);
-
         // Redirect to home or items list
         window.location.href = '/';
     } catch (error) {
@@ -215,7 +197,5 @@ document.getElementById('save-exit-btn').addEventListener('click', async () => {
         alert('Error saving capture');
     }
 });
-
-console.log('All event listeners attached successfully');
 </script>
 {% endblock %}
