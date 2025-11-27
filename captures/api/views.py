@@ -3,6 +3,7 @@ API views for the captures app.
 """
 from django.db import transaction
 from django.db.models import Max
+from django.http import HttpResponse
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -43,6 +44,37 @@ class CapturedItemViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Set owner to current user on create."""
         serializer.save(owner=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        """
+        Override update to handle HTMX requests.
+
+        For HTMX requests (detected via HX-Request header), returns HTML.
+        For standard API requests, returns JSON as usual.
+        """
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        # Check if this is an HTMX request
+        if request.headers.get('HX-Request'):
+            # Return a simple HTML response for HTMX
+            return HttpResponse(
+                '<span style="color: var(--nord14); font-size: 0.875rem;">Saved ✓</span>',
+                status=200
+            )
+
+        # Standard DRF response for API clients
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+        return Response(serializer.data)
+
+    def partial_update(self, request, *args, **kwargs):
+        """Handle PATCH requests (partial updates)."""
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
 
     @action(detail=True, methods=['post'], url_path='upload_images', throttle_classes=[ImageUploadThrottle])
     def upload_images(self, request, short_uuid=None):

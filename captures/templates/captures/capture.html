@@ -31,14 +31,24 @@
 
 <!-- Voice Transcript Textarea -->
 <div class="form-group">
-    <label class="form-label" for="voice-transcript">Notes / Voice Transcript</label>
+    <label class="form-label" for="voice-transcript">
+        Notes / Voice Transcript
+        <span id="save-indicator" class="htmx-indicator" style="margin-left: 0.5rem; color: var(--nord10); font-size: 0.875rem;">Saving...</span>
+    </label>
     <textarea
         id="voice-transcript"
+        name="voice_transcript"
         class="form-input"
         rows="6"
         placeholder="Describe the item... or use voice input"
         style="resize: vertical; min-height: 120px;"
+        hx-patch="/api/captures/items/{{ capture.short_uuid }}/"
+        hx-trigger="input changed delay:300ms"
+        hx-indicator="#save-indicator"
+        hx-swap="innerHTML"
+        hx-target="#save-status"
     >{{ capture.voice_transcript }}</textarea>
+    <div id="save-status" style="margin-top: 0.25rem; min-height: 1.25rem;"></div>
     <span class="form-helptext">Auto-saves as you type. Speak naturally - AI will process later.</span>
 </div>
 
@@ -56,9 +66,6 @@ const CAPTURE_ID = '{{ capture.short_uuid }}';
 const API_BASE = '/api/captures/items';
 const CSRF_TOKEN = '{{ csrf_token }}';
 
-console.log('Capture page loaded. CAPTURE_ID:', CAPTURE_ID);
-console.log('CSRF_TOKEN from template:', CSRF_TOKEN);
-
 // Get CSRF token from cookies
 function getCookie(name) {
     let cookieValue = null;
@@ -75,53 +82,17 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// Debounce function for auto-save
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Auto-save transcript
-const saveTranscript = debounce(async (text) => {
-    try {
-        const response = await fetch(`${API_BASE}/${CAPTURE_ID}/`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({ voice_transcript: text })
-        });
-
-        if (!response.ok) {
-            console.error('Failed to save transcript');
-        }
-    } catch (error) {
-        console.error('Error saving transcript:', error);
-    }
-}, 500);
-
 // Image upload handler
 document.getElementById('add-photos-btn').addEventListener('click', () => {
-    console.log('Add photos button clicked');
     document.getElementById('image-upload').click();
 });
 
 document.getElementById('add-photo-placeholder').addEventListener('click', () => {
-    console.log('Add photo placeholder clicked');
     document.getElementById('image-upload').click();
 });
 
 document.getElementById('image-upload').addEventListener('change', async (e) => {
     const files = e.target.files;
-    console.log('Files selected:', files.length);
     if (files.length === 0) return;
 
     const formData = new FormData();
@@ -129,10 +100,7 @@ document.getElementById('image-upload').addEventListener('change', async (e) => 
         formData.append('images', file);
     }
 
-    console.log('Uploading images to:', `${API_BASE}/${CAPTURE_ID}/upload_images/`);
-
     const csrfToken = getCookie('csrftoken');
-    console.log('Using CSRF token:', csrfToken);
 
     try {
         const response = await fetch(`${API_BASE}/${CAPTURE_ID}/upload_images/`, {
@@ -143,10 +111,7 @@ document.getElementById('image-upload').addEventListener('change', async (e) => 
             body: formData
         });
 
-        console.log('Upload response status:', response.status);
-
         if (response.ok) {
-            console.log('Upload successful, reloading page');
             // Reload page to show new images
             window.location.reload();
         } else {
@@ -195,15 +160,8 @@ document.addEventListener('click', async (e) => {
     }
 });
 
-// Transcript auto-save
-document.getElementById('voice-transcript').addEventListener('input', (e) => {
-    console.log('Transcript changed, auto-saving...');
-    saveTranscript(e.target.value);
-});
-
 // Next Item button - completes current capture and creates new one
 document.getElementById('next-item-btn').addEventListener('click', async () => {
-    console.log('Next Item button clicked');
     try {
         // Mark current capture as complete
         const response = await fetch(`${API_BASE}/${CAPTURE_ID}/complete/`, {
@@ -212,8 +170,6 @@ document.getElementById('next-item-btn').addEventListener('click', async () => {
                 'X-CSRFToken': getCookie('csrftoken')
             }
         });
-
-        console.log('Complete response status:', response.status);
 
         // Redirect to new capture (view will create new one)
         window.location.href = '/capture/';
@@ -225,7 +181,6 @@ document.getElementById('next-item-btn').addEventListener('click', async () => {
 
 // Save & Exit button
 document.getElementById('save-exit-btn').addEventListener('click', async () => {
-    console.log('Save & Exit button clicked');
     try {
         // Mark as complete
         const response = await fetch(`${API_BASE}/${CAPTURE_ID}/complete/`, {
@@ -235,8 +190,6 @@ document.getElementById('save-exit-btn').addEventListener('click', async () => {
             }
         });
 
-        console.log('Save response status:', response.status);
-
         // Redirect to home or items list
         window.location.href = '/';
     } catch (error) {
@@ -244,7 +197,5 @@ document.getElementById('save-exit-btn').addEventListener('click', async () => {
         alert('Error saving capture');
     }
 });
-
-console.log('All event listeners attached successfully');
 </script>
 {% endblock %}
