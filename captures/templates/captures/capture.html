@@ -31,14 +31,24 @@
 
 <!-- Voice Transcript Textarea -->
 <div class="form-group">
-    <label class="form-label" for="voice-transcript">Notes / Voice Transcript</label>
+    <label class="form-label" for="voice-transcript">
+        Notes / Voice Transcript
+        <span id="save-indicator" class="htmx-indicator" style="margin-left: 0.5rem; color: var(--nord10); font-size: 0.875rem;">Saving...</span>
+    </label>
     <textarea
         id="voice-transcript"
+        name="voice_transcript"
         class="form-input"
         rows="6"
         placeholder="Describe the item... or use voice input"
         style="resize: vertical; min-height: 120px;"
+        hx-patch="/api/captures/items/{{ capture.short_uuid }}/"
+        hx-trigger="input changed delay:300ms"
+        hx-indicator="#save-indicator"
+        hx-swap="innerHTML"
+        hx-target="#save-status"
     >{{ capture.voice_transcript }}</textarea>
+    <div id="save-status" style="margin-top: 0.25rem; min-height: 1.25rem;"></div>
     <span class="form-helptext">Auto-saves as you type. Speak naturally - AI will process later.</span>
 </div>
 
@@ -74,39 +84,6 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-
-// Debounce function for auto-save
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Auto-save transcript
-const saveTranscript = debounce(async (text) => {
-    try {
-        const response = await fetch(`${API_BASE}/${CAPTURE_ID}/`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({ voice_transcript: text })
-        });
-
-        if (!response.ok) {
-            console.error('Failed to save transcript');
-        }
-    } catch (error) {
-        console.error('Error saving transcript:', error);
-    }
-}, 500);
 
 // Image upload handler
 document.getElementById('add-photos-btn').addEventListener('click', () => {
@@ -193,12 +170,6 @@ document.addEventListener('click', async (e) => {
             alert('Error removing image');
         }
     }
-});
-
-// Transcript auto-save
-document.getElementById('voice-transcript').addEventListener('input', (e) => {
-    console.log('Transcript changed, auto-saving...');
-    saveTranscript(e.target.value);
 });
 
 // Next Item button - completes current capture and creates new one
