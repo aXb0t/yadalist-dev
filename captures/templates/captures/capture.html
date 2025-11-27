@@ -33,7 +33,7 @@
 <div class="form-group">
     <label class="form-label" for="voice-transcript">
         Notes / Voice Transcript
-        <span id="save-indicator" class="htmx-indicator" style="margin-left: 0.5rem; color: var(--nord10); font-size: 0.875rem;">Saving...</span>
+        {% include 'partials/_save_indicator.html' %}
     </label>
     <textarea
         id="voice-transcript"
