@@ -443,3 +443,82 @@ class AuthenticationTests(TestCase):
         self.client.force_authenticate(user=self.user)
         response = self.client.get('/api/captures/items/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class CapturePageViewTests(TestCase):
+    """
+    Tests for the capture page view.
+    """
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='testuser',
+            password='testpass123'
+        )
+        self.client.login(username='testuser', password='testpass123')
+
+    def test_capture_page_requires_login(self):
+        """Test that capture page requires authentication."""
+        self.client.logout()
+        response = self.client.get('/capture/')
+        self.assertEqual(response.status_code, 302)  # Redirect to login
+        self.assertTrue(response.url.startswith('/accounts/login'))
+
+    def test_capture_page_creates_new_capture(self):
+        """Test that accessing /capture/ creates a new capture."""
+        initial_count = CapturedItem.objects.count()
+        response = self.client.get('/capture/')
+
+        # Should redirect to /capture/?id=<uuid>
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith('/capture/?id='))
+
+        # Should have created one capture
+        self.assertEqual(CapturedItem.objects.count(), initial_count + 1)
+
+    def test_capture_page_loads_existing_capture(self):
+        """Test that /capture/?id=<uuid> loads existing capture."""
+        # Create a capture
+        capture = CapturedItem.objects.create(
+            owner=self.user,
+            voice_transcript='Test transcript'
+        )
+
+        # Load the page with the capture ID
+        response = self.client.get(f'/capture/?id={capture.short_uuid}')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Capture Item')
+        self.assertContains(response, 'Test transcript')
+
+    def test_capture_page_rejects_other_users_capture(self):
+        """Test that users cannot access other users' captures."""
+        other_user = User.objects.create_user(
+            username='otheruser',
+            password='otherpass123'
+        )
+        other_capture = CapturedItem.objects.create(owner=other_user)
+
+        # Try to access other user's capture
+        response = self.client.get(f'/capture/?id={other_capture.short_uuid}')
+
+        # Should redirect to new capture
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith('/capture/'))
+
+    def test_capture_page_with_images(self):
+        """Test that capture page displays images."""
+        capture = CapturedItem.objects.create(owner=self.user)
+        image = CapturedImage.objects.create(
+            owner=self.user,
+            captured_item=capture,
+            image=create_test_image(),
+            order=0
+        )
+
+        response = self.client.get(f'/capture/?id={capture.short_uuid}')
+
+        self.assertEqual(response.status_code, 200)
+        # Check that the page contains the image count context
+        self.assertEqual(response.context['image_count'], 1)
+        # Check that image data is present
+        self.assertContains(response, image.short_uuid)

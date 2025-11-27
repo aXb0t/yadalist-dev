@@ -1,0 +1,250 @@
+{% extends 'captures/base.html' %}
+{% load static %}
+
+{% block title %}Capture Item - YadaList{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<h2 class="heading-2">Capture Item</h2>
+
+<!-- Image Grid Area -->
+<div style="margin-bottom: 1.5rem;">
+    <label class="form-label">Photos (<span id="image-count">{{ image_count }}</span>/20)</label>
+    <div id="image-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+        <!-- Existing images -->
+        {% for image in images %}
+        <div class="image-item" data-image-id="{{ image.short_uuid }}" data-uuid="{{ image.uuid }}" style="position: relative; border-radius: 0.5rem; aspect-ratio: 1; background: var(--nord6); overflow: hidden; cursor: pointer;">
+            <img src="{{ image.image.url }}" alt="Capture image" style="width: 100%; height: 100%; object-fit: cover;">
+            <button class="remove-image" data-image-id="{{ image.short_uuid }}" style="position: absolute; top: 4px; right: 4px; background: var(--nord11); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: bold; border: none; cursor: pointer;">&times;</button>
+        </div>
+        {% endfor %}
+
+        <!-- Add Photo Button -->
+        <div id="add-photo-placeholder" style="border: 2px dashed var(--nord4); border-radius: 0.5rem; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--nord6);">
+            <span style="color: var(--nord3); font-size: 2rem;">+</span>
+        </div>
+    </div>
+    <input type="file" id="image-upload" accept="image/*" multiple style="display: none;">
+    <button type="button" id="add-photos-btn" class="btn btn--secondary">Add Photos</button>
+    <span class="form-helptext">Upload up to 20 images. Click × to remove images.</span>
+</div>
+
+<!-- Voice Transcript Textarea -->
+<div class="form-group">
+    <label class="form-label" for="voice-transcript">Notes / Voice Transcript</label>
+    <textarea
+        id="voice-transcript"
+        class="form-input"
+        rows="6"
+        placeholder="Describe the item... or use voice input"
+        style="resize: vertical; min-height: 120px;"
+    >{{ capture.voice_transcript }}</textarea>
+    <span class="form-helptext">Auto-saves as you type. Speak naturally - AI will process later.</span>
+</div>
+
+<!-- Action Buttons -->
+<div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+    <button type="button" id="next-item-btn" class="btn btn--primary">Next Item</button>
+    <button type="button" id="save-exit-btn" class="btn btn--secondary">Save & Exit</button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Configuration
+const CAPTURE_ID = '{{ capture.short_uuid }}';
+const API_BASE = '/api/captures/items';
+const CSRF_TOKEN = '{{ csrf_token }}';
+
+console.log('Capture page loaded. CAPTURE_ID:', CAPTURE_ID);
+console.log('CSRF_TOKEN from template:', CSRF_TOKEN);
+
+// Get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Debounce function for auto-save
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Auto-save transcript
+const saveTranscript = debounce(async (text) => {
+    try {
+        const response = await fetch(`${API_BASE}/${CAPTURE_ID}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ voice_transcript: text })
+        });
+
+        if (!response.ok) {
+            console.error('Failed to save transcript');
+        }
+    } catch (error) {
+        console.error('Error saving transcript:', error);
+    }
+}, 500);
+
+// Image upload handler
+document.getElementById('add-photos-btn').addEventListener('click', () => {
+    console.log('Add photos button clicked');
+    document.getElementById('image-upload').click();
+});
+
+document.getElementById('add-photo-placeholder').addEventListener('click', () => {
+    console.log('Add photo placeholder clicked');
+    document.getElementById('image-upload').click();
+});
+
+document.getElementById('image-upload').addEventListener('change', async (e) => {
+    const files = e.target.files;
+    console.log('Files selected:', files.length);
+    if (files.length === 0) return;
+
+    const formData = new FormData();
+    for (let file of files) {
+        formData.append('images', file);
+    }
+
+    console.log('Uploading images to:', `${API_BASE}/${CAPTURE_ID}/upload_images/`);
+
+    const csrfToken = getCookie('csrftoken');
+    console.log('Using CSRF token:', csrfToken);
+
+    try {
+        const response = await fetch(`${API_BASE}/${CAPTURE_ID}/upload_images/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        });
+
+        console.log('Upload response status:', response.status);
+
+        if (response.ok) {
+            console.log('Upload successful, reloading page');
+            // Reload page to show new images
+            window.location.reload();
+        } else {
+            const data = await response.json();
+            console.error('Upload failed:', data);
+            alert(data.error || 'Failed to upload images');
+        }
+    } catch (error) {
+        console.error('Error uploading images:', error);
+        alert('Error uploading images');
+    }
+
+    // Reset file input
+    e.target.value = '';
+});
+
+// Image removal handler
+document.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('remove-image')) {
+        const imageId = e.target.dataset.imageId;
+
+        if (!confirm('Remove this image?')) return;
+
+        try {
+            const response = await fetch(`${API_BASE}/${CAPTURE_ID}/images/${imageId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+
+            if (response.ok) {
+                // Remove image from DOM
+                e.target.closest('.image-item').remove();
+
+                // Update count
+                const countEl = document.getElementById('image-count');
+                countEl.textContent = parseInt(countEl.textContent) - 1;
+            } else {
+                alert('Failed to remove image');
+            }
+        } catch (error) {
+            console.error('Error removing image:', error);
+            alert('Error removing image');
+        }
+    }
+});
+
+// Transcript auto-save
+document.getElementById('voice-transcript').addEventListener('input', (e) => {
+    console.log('Transcript changed, auto-saving...');
+    saveTranscript(e.target.value);
+});
+
+// Next Item button - completes current capture and creates new one
+document.getElementById('next-item-btn').addEventListener('click', async () => {
+    console.log('Next Item button clicked');
+    try {
+        // Mark current capture as complete
+        const response = await fetch(`${API_BASE}/${CAPTURE_ID}/complete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+
+        console.log('Complete response status:', response.status);
+
+        // Redirect to new capture (view will create new one)
+        window.location.href = '/capture/';
+    } catch (error) {
+        console.error('Error completing capture:', error);
+        alert('Error completing capture');
+    }
+});
+
+// Save & Exit button
+document.getElementById('save-exit-btn').addEventListener('click', async () => {
+    console.log('Save & Exit button clicked');
+    try {
+        // Mark as complete
+        const response = await fetch(`${API_BASE}/${CAPTURE_ID}/complete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+
+        console.log('Save response status:', response.status);
+
+        // Redirect to home or items list
+        window.location.href = '/';
+    } catch (error) {
+        console.error('Error saving capture:', error);
+        alert('Error saving capture');
+    }
+});
+
+console.log('All event listeners attached successfully');
+</script>
+{% endblock %}
